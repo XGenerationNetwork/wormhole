@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wormhole — a 5OS billboard</title>
+<meta name="description" content="An example page with the Wormhole billboard from 5OS as its header: a three.js scene generated entirely in shaders, behind real HTML text.">
+<style>
+/* ---- tokens: change the colours and the type here ---- */
+:root {
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.72);
+  --accent: #8fd3ff;
+  --ground: #0b0e16;
+  --panel: #141927;
+  --line: rgba(255, 255, 255, 0.12);
+  --max: 72rem;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin: 0; font-family: var(--font); background: var(--ground); color: var(--ink); line-height: 1.55; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* the skip link is the first thing in the body, visible when focused */
+.skip { position: absolute; left: -999px; top: 0.5rem; z-index: 10; background: #fff; color: #000; padding: 0.5rem 1rem; border-radius: 0.4rem; }
+.skip:focus { left: 0.5rem; }
+
+/* ---- header over the hero ---- */
+.site { position: absolute; inset: 0 0 auto 0; z-index: 2; }
+.site nav { max-width: var(--max); margin: 0 auto; padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; }
+.brand { font-weight: 700; letter-spacing: 0.02em; color: var(--ink); text-decoration: none; }
+.site ul { list-style: none; margin: 0 0 0 auto; padding: 0; display: flex; gap: 1.25rem; }
+.site ul a { color: var(--ink-2); text-decoration: none; font-size: 0.95rem; }
+.site ul a:hover { color: var(--ink); }
+
+/* ---- the hero: the billboard sits behind real text ---- */
+.hero { position: relative; isolation: isolate; min-height: min(100vh, 52rem); display: grid; place-items: center; padding: 6rem 1.5rem 4rem; overflow: hidden; }
+.billboard { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+.billboard canvas { display: block; width: 100%; height: 100%; }
+.hero > .hero-content { position: relative; z-index: 1; text-align: center; max-width: 44rem; }
+h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 0.5em; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
+.tagline { font-size: clamp(1.05rem, 2.2vw, 1.35rem); color: var(--ink-2); margin: 0 0 1.6em; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5); }
+.cta { display: inline-block; padding: 0.8rem 1.4rem; border-radius: 999px; background: var(--accent); color: #0b0e16; font-weight: 600; text-decoration: none; }
+.cta:hover { filter: brightness(1.08); }
+
+/* ---- the rest of the page ---- */
+main section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(2.5rem, 6vw, 5rem) 1.5rem; scroll-margin-top: 1rem; }
+h2 { font-size: clamp(1.5rem, 3.2vw, 2.2rem); margin: 0 0 0.6em; letter-spacing: -0.01em; }
+p { max-width: 62ch; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+.cards li { background: var(--panel); border: 1px solid var(--line); border-radius: 0.9rem; padding: 1.2rem 1.3rem; }
+.cards h3 { margin: 0 0 0.4em; font-size: 1.05rem; }
+.cards p { margin: 0; color: var(--ink-2); font-size: 0.95rem; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; background: var(--panel); padding: 0.1em 0.35em; border-radius: 0.3em; }
+footer { border-top: 1px solid var(--line); padding: 2rem 1.5rem; color: var(--ink-2); font-size: 0.9rem; text-align: center; }
+
+/* ---- motion, only for people who have not asked for none ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.is-in { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site">
+  <nav aria-label="Primary">
+    <a class="brand" href="#main">Wormhole</a>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#how">How it is made</a></li>
+      <li><a href="#reuse">Reuse it</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="title">
+    <!-- 5OS billboard "Wormhole" - keep this block exactly as it is, and put it INSIDE the hero
+         section, which must be position: relative. The real headline and buttons come after it
+         in the markup with position: relative and a z-index, so text stays text. -->
+    <div class="billboard" data-billboard="wormhole" data-params="{&quot;speed&quot;:1,&quot;twist&quot;:0.8,&quot;cycle&quot;:24}" style="background: radial-gradient(circle at 50% 50%, #f0f8ff 0%, #4a2a9a 20%, #08040f 70%);">
+      <canvas aria-hidden="true"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+    <script>
+    (function () {
+      'use strict';
+      var FACTORY = function (THREE, canvas, opts) {
+      'use strict';
+      var W = opts.width || canvas.clientWidth || 800;
+      var H = opts.height || canvas.clientHeight || 450;
+      var DPR = Math.min(opts.pixelRatio || 1, 2);
+      var P = opts.params || {};              /* the controls, if the billboard has any */
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(DPR);
+      renderer.setSize(W, H, false);
+      var scene = new THREE.Scene();
+      var disposables = [];
+      var P0 = +(P.speed || 1), P1 = +(P.twist === undefined ? 0.8 : P.twist), P2 = +(P.cycle || 24), P3 = 0;
+      var FRAG = [
+        "precision highp float;",
+        "uniform float uTime; uniform vec2 uRes; uniform vec4 uP;",
+        "float hash21(vec2 p) {",
+        "  p = fract(p * vec2(123.34, 456.21));",
+        "  p += dot(p, p + 45.32);",
+        "  return fract(p.x * p.y);",
+        "}",
+        "float vnoise2(vec2 p) {",
+        "  vec2 i = floor(p);",
+        "  vec2 f = fract(p);",
+        "  f = f * f * (3.0 - 2.0 * f);",
+        "  float a = hash21(i);",
+        "  float b = hash21(i + vec2(1.0, 0.0));",
+        "  float c = hash21(i + vec2(0.0, 1.0));",
+        "  float d = hash21(i + vec2(1.0, 1.0));",
+        "  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);",
+        "}",
+        "float fbm(vec2 p) {",
+        "  float v = 0.0;",
+        "  float a = 0.5;",
+        "  for (int k = 0; k < 5; k++) {",
+        "    v += a * vnoise2(p);",
+        "    p = p * 2.03 + vec2(17.1, 9.7);",
+        "    a *= 0.5;",
+        "  }",
+        "  return v;",
+        "}",
+        "vec3 pal(float t, vec3 a, vec3 b, vec3 c, vec3 d) {",
+        "  return a + b * cos(6.28318 * (c * t + d));",
+        "}",
+        "float hash31(vec3 p) {",
+        "  p = fract(p * vec3(0.1031, 0.1030, 0.0973));",
+        "  p += dot(p, p.yxz + 33.33);",
+        "  return fract((p.x + p.y) * p.z);",
+        "}",
+        "float vnoise3(vec3 p) {",
+        "  vec3 i = floor(p);",
+        "  vec3 f = fract(p);",
+        "  f = f * f * (3.0 - 2.0 * f);",
+        "  float n000 = hash31(i), n100 = hash31(i + vec3(1.0, 0.0, 0.0));",
+        "  float n010 = hash31(i + vec3(0.0, 1.0, 0.0)), n110 = hash31(i + vec3(1.0, 1.0, 0.0));",
+        "  float n001 = hash31(i + vec3(0.0, 0.0, 1.0)), n101 = hash31(i + vec3(1.0, 0.0, 1.0));",
+        "  float n011 = hash31(i + vec3(0.0, 1.0, 1.0)), n111 = hash31(i + vec3(1.0, 1.0, 1.0));",
+        "  return mix(mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),",
+        "             mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y), f.z);",
+        "}",
+        "float fbm3(vec3 p) {",
+        "  float v = 0.0, a = 0.5;",
+        "  for (int k = 0; k < 5; k++) { v += a * vnoise3(p); p = p * 2.02 + vec3(13.1, 7.7, 5.3); a *= 0.5; }",
+        "  return v;",
+        "}",
+        "float stars(vec3 rd, float dens) {",
+        "  vec3 q = rd * 260.0;",
+        "  vec3 c = floor(q);",
+        "  float h = hash31(c);",
+        "  float s = step(1.0 - dens, h);",
+        "  vec3 f = fract(q) - 0.5;",
+        "  return s * smoothstep(0.55, 0.0, length(f)) * (0.4 + 0.6 * hash31(c + 7.0));",
+        "}",
+        "void main() {",
+        "  vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;",
+        "  float t = uTime * uP.x;",
+        "  float ph = fract(uTime / uP.z);",
+        "  /* the throat wanders a little, so the walls are never centred */",
+        "  vec2 centre = 0.08 * vec2(sin(t * 0.3), cos(t * 0.23));",
+        "  vec2 q = uv - centre;",
+        "  float r = length(q);",
+        "  float th = atan(q.y, q.x);",
+        "  /* the tunnel: depth by 1/r, the angle twisted with depth and time */",
+        "  float depth = 0.35 / max(r, 0.02) + t * 2.0;",
+        "  float tw = th + depth * 0.25 * uP.y;",
+        "  vec2 ring = vec2(cos(tw), sin(tw));",
+        "  float n = fbm(vec2(ring.x * 2.2 + depth * 0.7, ring.y * 2.2 + 3.0)) * 0.6 + fbm(vec2(ring.y * 5.0 + 9.0, depth * 1.5)) * 0.4;",
+        "  vec3 wall = pal(n * 1.4 + depth * 0.02, vec3(0.35, 0.25, 0.55), vec3(0.45, 0.35, 0.45), vec3(1.0, 1.0, 0.8), vec3(0.6, 0.15, 0.3));",
+        "  wall *= 0.5 + 0.9 * smoothstep(0.35, 0.8, n);",
+        "  /* speed lines: streaks along the throat, fast */",
+        "  float streak = smoothstep(0.85, 1.0, vnoise2(vec2(tw * 12.0, depth * 0.35 + t * 6.0)));",
+        "  wall += vec3(0.8, 0.9, 1.0) * streak * 0.7;",
+        "  /* far down the throat it goes to white light; near the walls it is dark */",
+        "  float glow = smoothstep(0.55, 0.0, r);",
+        "  vec3 col = wall * smoothstep(0.02, 0.35, r) + vec3(0.9, 0.85, 1.0) * glow * glow * 0.9;",
+        "  /* the exit: an Einstein ring that grows as the far mouth nears, with the stars of the far side round it */",
+        "  float near = smoothstep(0.55, 0.98, ph);",
+        "  float R = 0.02 + 0.55 * near * near;",
+        "  float band = exp(-pow((r - R) / (0.012 + 0.05 * near), 2.0));",
+        "  vec3 lensed = vec3(0.9, 0.95, 1.0) * stars(normalize(vec3(cos(th * 3.0), sin(th * 3.0), 0.6)), 0.06) * 2.0;",
+        "  col += (vec3(0.85, 0.92, 1.0) * 1.4 + lensed) * band * near;",
+        "  /* inside the ring: the other side, sky and stars, growing to fill the frame */",
+        "  float inside = smoothstep(R, R * 0.85, r) * near;",
+        "  vec3 beyond = vec3(0.02, 0.03, 0.08) + vec3(0.9, 0.95, 1.0) * stars(normalize(vec3(q * 3.0, 1.0)), 0.03) * 1.5 + vec3(0.15, 0.25, 0.45) * fbm(q * 4.0 + 20.0);",
+        "  col = mix(col, beyond, inside);",
+        "  /* the flash as you come through, and a fade at the start */",
+        "  col += vec3(1.0) * smoothstep(0.97, 1.0, ph) * 2.0;",
+        "  col *= smoothstep(0.0, 0.06, ph) + 0.15;",
+        "  gl_FragColor = vec4(col, 1.0);",
+        "}"
+      ].join("\n");
+      var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      var geo = new THREE.PlaneGeometry(2, 2);
+      var uniforms = { uTime: { value: 0 }, uRes: { value: new THREE.Vector2(W * DPR, H * DPR) },
+                       uP: { value: new THREE.Vector4(P0, P1, P2, P3) } };
+      var mat = new THREE.ShaderMaterial({
+        uniforms: uniforms, depthTest: false, depthWrite: false,
+        vertexShader: "void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }",
+        fragmentShader: FRAG
+      });
+      var quad = new THREE.Mesh(geo, mat);
+      quad.frustumCulled = false;
+      scene.add(quad);
+      disposables.push(geo, mat);
+      function onResize(w, h) { uniforms.uRes.value.set(w * DPR, h * DPR); }
+      function render(t) { uniforms.uTime.value = t; renderer.render(scene, camera); }
+      function resize(w, h) {
+        W = w; H = h;
+        renderer.setSize(W, H, false);
+        onResize(W, H);
+      }
+      function dispose() {
+        for (var i = 0; i < disposables.length; i++) { try { disposables[i].dispose(); } catch (e) {} }
+        disposables.length = 0;
+        try { renderer.dispose(); } catch (e2) {}
+        try { renderer.forceContextLoss(); } catch (e3) {}
+      }
+      return { render: render, resize: resize, dispose: dispose };
+    };
+      function mount(host) {
+        var canvas = host.querySelector("canvas");
+        if (!canvas || !window.THREE) return;
+        var probe = null;
+        try { probe = document.createElement("canvas").getContext("webgl"); } catch (e) { probe = null; }
+        if (!probe) return;                                   /* the CSS fallback stays */
+        var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var W = host.clientWidth || 800, H = host.clientHeight || 450;
+        var params = {};
+        try { params = JSON.parse(host.getAttribute("data-params") || "{}") || {}; } catch (e0) { params = {}; }
+        var scene;
+        try {
+          scene = FACTORY(THREE, canvas, { width: W, height: H, pixelRatio: window.devicePixelRatio || 1, reducedMotion: reduced, params: params });
+        } catch (e2) { return; }
+        var running = false, raf = 0, last = 0, t = 0, visible = true, shown = true;
+        function frame(now) {
+          raf = 0;
+          if (!running) return;
+          var dt = last ? Math.min((now - last) / 1000, 0.1) : 0;   /* a background tab must not jump */
+          last = now;
+          t += dt;
+          scene.render(t, dt);
+          raf = requestAnimationFrame(frame);
+        }
+        function start() {
+          if (running || !visible || !shown) return;
+          running = true; last = 0;
+          if (!raf) raf = requestAnimationFrame(frame);
+        }
+        function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+        if (reduced) { scene.render(0, 0); }                   /* one still frame, no loop */
+        else { start(); }
+        function resize() {
+          var w = host.clientWidth || W, h = host.clientHeight || H;
+          if (w === W && h === H) return;
+          W = w; H = h; scene.resize(W, H);
+          if (reduced) scene.render(0, 0);
+        }
+        if (window.ResizeObserver) { new ResizeObserver(resize).observe(host); }
+        else { window.addEventListener("resize", resize); }
+        if (window.IntersectionObserver) {
+          new IntersectionObserver(function (es) {
+            shown = es[0].isIntersecting; shown ? start() : stop();
+          }, { threshold: 0.01 }).observe(host);
+        }
+        document.addEventListener("visibilitychange", function () {
+          visible = !document.hidden; visible ? start() : stop();
+        });
+        window.addEventListener("pagehide", function () { stop(); scene.dispose(); });
+      }
+      var hosts = document.querySelectorAll(".billboard");
+      for (var i = 0; i < hosts.length; i++) mount(hosts[i]);
+    })();
+    </script>
+    <div class="hero-content">
+      <h1 id="title">Wormhole</h1>
+      <p class="tagline">Through a wormhole: a throat of light you fall along, the walls a plasma of noise turning as you go, speed-lines streaming past, and at the far end the exit as an Einstein ring - the stars of wherever you are going bent into a circle round the mouth, which is what a lens that strong does to whatever is behind it.</p>
+      <a class="cta" href="#about">See how it is made</a>
+    </div>
+  </section>
+
+  <section id="about" class="reveal">
+    <h2>About this billboard</h2>
+    <p>Through a wormhole: a throat of light you fall along, the walls a plasma of noise turning as you go, speed-lines streaming past, and at the far end the exit as an Einstein ring - the stars of wherever you are going bent into a circle round the mouth, which is what a lens that strong does to whatever is behind it. The tunnel is a cylinder in polar coordinates with the noise fed cosines of the angle so there is no seam; the ring is a bright annulus with the star field mapped round it, and it grows as the exit nears, then you are through and it begins again.</p>
+    <p>Everything you see behind the headline is computed on your graphics card from a few hundred lines of code: no image, no video, nothing downloaded except three.js itself. Resize the window and it recomposes; turn on reduced motion in your system settings and it holds a single still frame.</p>
+  </section>
+
+  <section id="how" class="reveal">
+    <h2>How it is made</h2>
+    <ul class="cards">
+      <li><h3>Generated, not loaded</h3><p>Shape comes from geometry and maths; surface comes from the fragment shader. There is no texture to fetch and nothing to cache.</p></li>
+      <li><h3>Driven by a clock</h3><p>Every motion is a function of time computed on the GPU, so there is no particle array to update and nothing for the page to do each frame.</p></li>
+      <li><h3>Disciplined</h3><p>Pixel ratio capped at 2, paused when scrolled away or when the tab is hidden, a still frame under reduced motion, released when the page is left, and a plain gradient where there is no WebGL.</p></li>
+    </ul>
+  </section>
+
+  <section id="reuse" class="reveal">
+    <h2>Reuse it</h2>
+    <p>Copy the block that starts <code>&lt;!-- 5OS billboard</code> into any hero section that is <code>position: relative</code>, keep the two <code>.billboard</code> rules from the stylesheet, and put your own headline after it. Change the words in this file and it is your page.</p>
+  </section>
+</main>
+
+<footer>Wormhole · a 5OS billboard, “Wormhole”</footer>
+
+<script>
+/* reveal on scroll: elements start visible, and only animate for people who have not asked for reduced motion */
+(function () {
+  'use strict';
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>
