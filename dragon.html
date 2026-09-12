@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragon's hoard — a 5OS billboard</title>
+<meta name="description" content="An example page with the Dragon's hoard billboard from 5OS as its header: a three.js scene generated entirely in shaders, behind real HTML text.">
+<style>
+/* ---- tokens: change the colours and the type here ---- */
+:root {
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.72);
+  --accent: #8fd3ff;
+  --ground: #0b0e16;
+  --panel: #141927;
+  --line: rgba(255, 255, 255, 0.12);
+  --max: 72rem;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin: 0; font-family: var(--font); background: var(--ground); color: var(--ink); line-height: 1.55; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* the skip link is the first thing in the body, visible when focused */
+.skip { position: absolute; left: -999px; top: 0.5rem; z-index: 10; background: #fff; color: #000; padding: 0.5rem 1rem; border-radius: 0.4rem; }
+.skip:focus { left: 0.5rem; }
+
+/* ---- header over the hero ---- */
+.site { position: absolute; inset: 0 0 auto 0; z-index: 2; }
+.site nav { max-width: var(--max); margin: 0 auto; padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; }
+.brand { font-weight: 700; letter-spacing: 0.02em; color: var(--ink); text-decoration: none; }
+.site ul { list-style: none; margin: 0 0 0 auto; padding: 0; display: flex; gap: 1.25rem; }
+.site ul a { color: var(--ink-2); text-decoration: none; font-size: 0.95rem; }
+.site ul a:hover { color: var(--ink); }
+
+/* ---- the hero: the billboard sits behind real text ---- */
+.hero { position: relative; isolation: isolate; min-height: min(100vh, 52rem); display: grid; place-items: center; padding: 6rem 1.5rem 4rem; overflow: hidden; }
+.billboard { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+.billboard canvas { display: block; width: 100%; height: 100%; }
+.hero > .hero-content { position: relative; z-index: 1; text-align: center; max-width: 44rem; }
+h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 0.5em; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
+.tagline { font-size: clamp(1.05rem, 2.2vw, 1.35rem); color: var(--ink-2); margin: 0 0 1.6em; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5); }
+.cta { display: inline-block; padding: 0.8rem 1.4rem; border-radius: 999px; background: var(--accent); color: #0b0e16; font-weight: 600; text-decoration: none; }
+.cta:hover { filter: brightness(1.08); }
+
+/* ---- the rest of the page ---- */
+main section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(2.5rem, 6vw, 5rem) 1.5rem; scroll-margin-top: 1rem; }
+h2 { font-size: clamp(1.5rem, 3.2vw, 2.2rem); margin: 0 0 0.6em; letter-spacing: -0.01em; }
+p { max-width: 62ch; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+.cards li { background: var(--panel); border: 1px solid var(--line); border-radius: 0.9rem; padding: 1.2rem 1.3rem; }
+.cards h3 { margin: 0 0 0.4em; font-size: 1.05rem; }
+.cards p { margin: 0; color: var(--ink-2); font-size: 0.95rem; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; background: var(--panel); padding: 0.1em 0.35em; border-radius: 0.3em; }
+footer { border-top: 1px solid var(--line); padding: 2rem 1.5rem; color: var(--ink-2); font-size: 0.9rem; text-align: center; }
+
+/* ---- motion, only for people who have not asked for none ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.is-in { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site">
+  <nav aria-label="Primary">
+    <a class="brand" href="#main">Dragon's hoard</a>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#how">How it is made</a></li>
+      <li><a href="#reuse">Reuse it</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="title">
+    <!-- 5OS billboard "Dragon's hoard" - keep this block exactly as it is, and put it INSIDE the hero
+         section, which must be position: relative. The real headline and buttons come after it
+         in the markup with position: relative and a z-index, so text stays text. -->
+    <div class="billboard" data-billboard="dragonhoard" data-params="{&quot;coins&quot;:10000,&quot;torch&quot;:1.3,&quot;gems&quot;:0.7}" style="background: radial-gradient(circle at 50% 70%, #d8a030 0%, #6a4010 40%, #0c0804 80%);">
+      <canvas aria-hidden="true"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+    <script>
+    (function () {
+      'use strict';
+      var FACTORY = function (THREE, canvas, opts) {
+      'use strict';
+      var W = opts.width || canvas.clientWidth || 800;
+      var H = opts.height || canvas.clientHeight || 450;
+      var DPR = Math.min(opts.pixelRatio || 1, 2);
+      var P = opts.params || {};              /* the controls, if the billboard has any */
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(DPR);
+      renderer.setSize(W, H, false);
+      var scene = new THREE.Scene();
+      var disposables = [];
+      var P0 = Math.round(+(P.coins || 15000)), P1 = +(P.torch || 1), P2 = +(P.gems === undefined ? 0.3 : P.gems), P3 = 0;
+      var VERT = [
+        "precision highp float;",
+        "attribute vec3 aSeed; attribute float aGem;",
+        "uniform float uTime; uniform vec4 uP;",
+        "varying vec3 vN; varying vec3 vP; varying vec3 vSeed; varying float vGem;",
+        "void main() {",
+        "  vec4 wp = instanceMatrix * vec4(position, 1.0);",
+        "  vN = normalize(mat3(instanceMatrix) * normal);",
+        "  vP = wp.xyz; vSeed = aSeed; vGem = aGem;",
+        "  gl_Position = projectionMatrix * viewMatrix * wp;",
+        "}"
+      ].join("\n");
+      var FRAG = [
+        "precision highp float;",
+        "varying vec3 vN; varying vec3 vP; varying vec3 vSeed; varying float vGem;",
+        "uniform float uTime; uniform vec4 uP; uniform vec3 uEye;",
+        "float hash21(vec2 p) {",
+        "  p = fract(p * vec2(123.34, 456.21));",
+        "  p += dot(p, p + 45.32);",
+        "  return fract(p.x * p.y);",
+        "}",
+        "float vnoise2(vec2 p) {",
+        "  vec2 i = floor(p);",
+        "  vec2 f = fract(p);",
+        "  f = f * f * (3.0 - 2.0 * f);",
+        "  float a = hash21(i);",
+        "  float b = hash21(i + vec2(1.0, 0.0));",
+        "  float c = hash21(i + vec2(0.0, 1.0));",
+        "  float d = hash21(i + vec2(1.0, 1.0));",
+        "  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);",
+        "}",
+        "float fbm(vec2 p) {",
+        "  float v = 0.0;",
+        "  float a = 0.5;",
+        "  for (int k = 0; k < 5; k++) {",
+        "    v += a * vnoise2(p);",
+        "    p = p * 2.03 + vec2(17.1, 9.7);",
+        "    a *= 0.5;",
+        "  }",
+        "  return v;",
+        "}",
+        "void main() {",
+        "  vec3 n = normalize(vN);",
+        "  /* the torch: on the floor to the left, flickering */",
+        "  vec3 torchP = vec3(-3.5, 2.6, 2.0);",
+        "  float flick = (0.8 + 0.25 * vnoise2(vec2(uTime * 7.0, 1.0)) + 0.1 * vnoise2(vec2(uTime * 23.0, 5.0))) * uP.y;",
+        "  vec3 toT = torchP - vP;",
+        "  float dist = length(toT); toT /= dist;",
+        "  float lam = max(dot(n, toT), 0.0) * flick * 14.0 / (1.0 + dist * dist * 0.5);",
+        "  vec3 toEye = normalize(uEye - vP);",
+        "  float spec = pow(max(dot(reflect(-toT, n), toEye), 0.0), 60.0) * flick * 3.0 / (1.0 + dist * 0.3);",
+        "  vec3 col;",
+        "  if (vGem < 0.5) {",
+        "    vec3 gold = mix(vec3(0.85, 0.55, 0.15), vec3(1.0, 0.80, 0.35), vSeed.x);",
+        "    col = gold * (0.06 + lam * 0.4) + vec3(1.0, 0.9, 0.6) * spec * (0.5 + 0.5 * vSeed.y);",
+        "  } else {",
+        "    vec3 jewel = vSeed.x < 0.33 ? vec3(0.9, 0.1, 0.15) : (vSeed.x < 0.66 ? vec3(0.1, 0.5, 0.95) : vec3(0.15, 0.85, 0.35));",
+        "    col = jewel * (0.1 + lam * 0.4) + vec3(1.0) * spec * 1.5 + jewel * pow(1.0 - max(dot(n, toEye), 0.0), 2.0) * 0.4;",
+        "  }",
+        "  gl_FragColor = vec4(col, 1.0);",
+        "}"
+      ].join("\n");
+      var N = P0;
+      var camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 100);
+      var coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.07, 14);
+      var gemGeo = new THREE.OctahedronGeometry(0.42, 0);
+      var s = 7331;
+      function rnd() { s = (s + 0x6D2B79F5) | 0; var z = Math.imul(s ^ (s >>> 15), 1 | s); z = (z + Math.imul(z ^ (z >>> 7), 61 | z)) ^ z; return ((z ^ (z >>> 14)) >>> 0) / 4294967296; }
+      var NG = Math.round(N * 0.03 * P2 + 20);
+      var seedsA = new Float32Array(N * 3), gem0 = new Float32Array(N), seedsG = new Float32Array(NG * 3), gem1 = new Float32Array(NG);
+      var coins = new THREE.InstancedMesh(coinGeo, null, N), gems = new THREE.InstancedMesh(gemGeo, null, NG);
+      var m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+      /* the mound: a Gaussian heap with a second smaller one */
+      function mound(x, z) { return 3.2 * Math.exp(-(x * x + z * z) / 14.0) + 1.4 * Math.exp(-((x - 4.5) * (x - 4.5) + (z + 2.0) * (z + 2.0)) / 5.0); }
+      for (var i = 0; i < N; i++) {
+        var x = (rnd() - 0.5) * 16, zz = (rnd() - 0.5) * 14;
+        var y = mound(x, zz) * (0.8 + 0.2 * rnd()) + 0.03;
+        e.set((rnd() - 0.5) * 1.2, rnd() * 6.28, (rnd() - 0.5) * 1.2);
+        q.setFromEuler(e);
+        var sc = 0.28 + 0.1 * rnd();
+        m4.compose(new THREE.Vector3(x, y, zz), q, new THREE.Vector3(sc, sc, sc));
+        coins.setMatrixAt(i, m4);
+        seedsA[i * 3] = rnd(); seedsA[i * 3 + 1] = rnd(); seedsA[i * 3 + 2] = rnd();
+      }
+      for (var g = 0; g < NG; g++) {
+        var gx = (rnd() - 0.5) * 12, gz = (rnd() - 0.5) * 10;
+        e.set(rnd() * 3.0, rnd() * 6.28, rnd() * 3.0); q.setFromEuler(e);
+        var gs = 0.25 + 0.2 * rnd();
+        m4.compose(new THREE.Vector3(gx, mound(gx, gz) + 0.15, gz), q, new THREE.Vector3(gs, gs, gs));
+        gems.setMatrixAt(g, m4);
+        seedsG[g * 3] = rnd(); seedsG[g * 3 + 1] = rnd(); seedsG[g * 3 + 2] = rnd(); gem1[g] = 1;
+      }
+      coinGeo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seedsA, 3));
+      coinGeo.setAttribute("aGem", new THREE.InstancedBufferAttribute(gem0, 1));
+      gemGeo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seedsG, 3));
+      gemGeo.setAttribute("aGem", new THREE.InstancedBufferAttribute(gem1, 1));
+      var uniforms = { uTime: { value: 0 }, uP: { value: new THREE.Vector4(P0, P1, P2, P3) }, uEye: { value: new THREE.Vector3() } };
+      var mat = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: VERT, fragmentShader: FRAG });
+      coins.material = mat; gems.material = mat;
+      coins.frustumCulled = false; gems.frustumCulled = false;
+      scene.add(coins); scene.add(gems);
+      var BACK = [
+        "precision highp float;",
+        "uniform vec2 uRes; uniform float uTime; uniform vec4 uP;",
+        "float hash21(vec2 p) {",
+        "  p = fract(p * vec2(123.34, 456.21));",
+        "  p += dot(p, p + 45.32);",
+        "  return fract(p.x * p.y);",
+        "}",
+        "float vnoise2(vec2 p) {",
+        "  vec2 i = floor(p);",
+        "  vec2 f = fract(p);",
+        "  f = f * f * (3.0 - 2.0 * f);",
+        "  float a = hash21(i);",
+        "  float b = hash21(i + vec2(1.0, 0.0));",
+        "  float c = hash21(i + vec2(0.0, 1.0));",
+        "  float d = hash21(i + vec2(1.0, 1.0));",
+        "  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);",
+        "}",
+        "float fbm(vec2 p) {",
+        "  float v = 0.0;",
+        "  float a = 0.5;",
+        "  for (int k = 0; k < 5; k++) {",
+        "    v += a * vnoise2(p);",
+        "    p = p * 2.03 + vec2(17.1, 9.7);",
+        "    a *= 0.5;",
+        "  }",
+        "  return v;",
+        "}",
+        "void main() {",
+        "  vec2 uv = gl_FragCoord.xy / uRes;",
+        "  vec2 p = (gl_FragCoord.xy - 0.5 * uRes) / (0.5 * uRes.y);",
+        "  /* the cave in the dark: rock lit faintly from the torch at the left, and the eyes */",
+        "  float flick = 0.8 + 0.25 * vnoise2(vec2(uTime * 7.0, 1.0));",
+        "  vec3 col = vec3(0.05, 0.03, 0.02) * (0.3 + 0.9 * fbm(p * 3.0 + 4.0)) * exp(-length(p - vec2(-1.1, -0.4)) * 1.2) * flick * uP.y * 3.0;",
+        "  col += vec3(1.0, 0.6, 0.25) * exp(-length(p - vec2(-1.15, -0.45)) * 5.0) * flick * uP.y * 0.8;",
+        "  /* two eyes, high and to the right, slit pupils, blinking */",
+        "  float blink = step(0.06, fract(uTime * 0.09 + 0.3)) * step(0.02, fract(uTime * 0.09 + 0.5));",
+        "  for (int k = 0; k < 2; k++) {",
+        "    vec2 ec = vec2(0.72 + float(k) * 0.26, 0.42);",
+        "    vec2 d = (p - ec) * vec2(1.0, 1.6);",
+        "    float eye = smoothstep(0.075, 0.06, length(d)) * blink;",
+        "    float pupil = smoothstep(0.02, 0.012, abs(d.x)) * smoothstep(0.07, 0.05, abs(d.y));",
+        "    col += vec3(1.0, 0.65, 0.1) * eye * (1.0 - pupil) * (0.7 + 0.3 * sin(uTime * 2.0));",
+        "  }",
+        "  gl_FragColor = vec4(col, 1.0);",
+        "}"
+      ].join("\n");
+      var bU = { uRes: { value: new THREE.Vector2(W * DPR, H * DPR) }, uTime: uniforms.uTime, uP: uniforms.uP };
+      var bGeo = new THREE.PlaneGeometry(2, 2);
+      var bMat = new THREE.ShaderMaterial({ uniforms: bU, depthTest: false, depthWrite: false, vertexShader: "void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }", fragmentShader: BACK });
+      var back = new THREE.Mesh(bGeo, bMat); back.frustumCulled = false; back.renderOrder = -1; scene.add(back);
+      disposables.push(bGeo, bMat);
+      disposables.push(coinGeo, gemGeo, mat);
+      function onResize(w, h) { camera.aspect = w / h; camera.updateProjectionMatrix(); bU.uRes.value.set(w * DPR, h * DPR); }
+      function render(t) {
+        uniforms.uTime.value = t;
+        /* the camera prowls slowly round the heap, so the glints keep changing */
+        camera.position.set(6.5 * Math.sin(t * 0.06), 3.2 + 0.4 * Math.sin(t * 0.11), 6.5 * Math.cos(t * 0.06) + 1.0);
+        camera.lookAt(0, 1.2, 0);
+        uniforms.uEye.value.copy(camera.position);
+        renderer.render(scene, camera);
+      }
+      function resize(w, h) {
+        W = w; H = h;
+        renderer.setSize(W, H, false);
+        onResize(W, H);
+      }
+      function dispose() {
+        for (var i = 0; i < disposables.length; i++) { try { disposables[i].dispose(); } catch (e) {} }
+        disposables.length = 0;
+        try { renderer.dispose(); } catch (e2) {}
+        try { renderer.forceContextLoss(); } catch (e3) {}
+      }
+      return { render: render, resize: resize, dispose: dispose };
+    };
+      function mount(host) {
+        var canvas = host.querySelector("canvas");
+        if (!canvas || !window.THREE) return;
+        var probe = null;
+        try { probe = document.createElement("canvas").getContext("webgl"); } catch (e) { probe = null; }
+        if (!probe) return;                                   /* the CSS fallback stays */
+        var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var W = host.clientWidth || 800, H = host.clientHeight || 450;
+        var params = {};
+        try { params = JSON.parse(host.getAttribute("data-params") || "{}") || {}; } catch (e0) { params = {}; }
+        var scene;
+        try {
+          scene = FACTORY(THREE, canvas, { width: W, height: H, pixelRatio: window.devicePixelRatio || 1, reducedMotion: reduced, params: params });
+        } catch (e2) { return; }
+        var running = false, raf = 0, last = 0, t = 0, visible = true, shown = true;
+        function frame(now) {
+          raf = 0;
+          if (!running) return;
+          var dt = last ? Math.min((now - last) / 1000, 0.1) : 0;   /* a background tab must not jump */
+          last = now;
+          t += dt;
+          scene.render(t, dt);
+          raf = requestAnimationFrame(frame);
+        }
+        function start() {
+          if (running || !visible || !shown) return;
+          running = true; last = 0;
+          if (!raf) raf = requestAnimationFrame(frame);
+        }
+        function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+        if (reduced) { scene.render(0, 0); }                   /* one still frame, no loop */
+        else { start(); }
+        function resize() {
+          var w = host.clientWidth || W, h = host.clientHeight || H;
+          if (w === W && h === H) return;
+          W = w; H = h; scene.resize(W, H);
+          if (reduced) scene.render(0, 0);
+        }
+        if (window.ResizeObserver) { new ResizeObserver(resize).observe(host); }
+        else { window.addEventListener("resize", resize); }
+        if (window.IntersectionObserver) {
+          new IntersectionObserver(function (es) {
+            shown = es[0].isIntersecting; shown ? start() : stop();
+          }, { threshold: 0.01 }).observe(host);
+        }
+        document.addEventListener("visibilitychange", function () {
+          visible = !document.hidden; visible ? start() : stop();
+        });
+        window.addEventListener("pagehide", function () { stop(); scene.dispose(); });
+      }
+      var hosts = document.querySelectorAll(".billboard");
+      for (var i = 0; i < hosts.length; i++) mount(hosts[i]);
+    })();
+    </script>
+    <div class="hero-content">
+      <h1 id="title">Dragon's hoard</h1>
+      <p class="tagline">A cave floor heaped with fifteen thousand gold coins, every one an instanced disc at its own angle on a mound, catching the light of a fallen torch - so the heap glitters as the camera moves, coin by coin, the way a heap of coins does and a texture never can - with a scatter of cut gems among them and the odd goblet.</p>
+      <a class="cta" href="#about">See how it is made</a>
+    </div>
+  </section>
+
+  <section id="about" class="reveal">
+    <h2>About this billboard</h2>
+    <p>A cave floor heaped with fifteen thousand gold coins, every one an instanced disc at its own angle on a mound, catching the light of a fallen torch - so the heap glitters as the camera moves, coin by coin, the way a heap of coins does and a texture never can - with a scatter of cut gems among them and the odd goblet. Behind, in the dark where the torch does not reach, two eyes, which blink now and then. The mound is a Gaussian, the tilts and the glints are hashes, and the torch flickers on noise.</p>
+    <p>Everything you see behind the headline is computed on your graphics card from a few hundred lines of code: no image, no video, nothing downloaded except three.js itself. Resize the window and it recomposes; turn on reduced motion in your system settings and it holds a single still frame.</p>
+  </section>
+
+  <section id="how" class="reveal">
+    <h2>How it is made</h2>
+    <ul class="cards">
+      <li><h3>Generated, not loaded</h3><p>Shape comes from geometry and maths; surface comes from the fragment shader. There is no texture to fetch and nothing to cache.</p></li>
+      <li><h3>Driven by a clock</h3><p>Every motion is a function of time computed on the GPU, so there is no particle array to update and nothing for the page to do each frame.</p></li>
+      <li><h3>Disciplined</h3><p>Pixel ratio capped at 2, paused when scrolled away or when the tab is hidden, a still frame under reduced motion, released when the page is left, and a plain gradient where there is no WebGL.</p></li>
+    </ul>
+  </section>
+
+  <section id="reuse" class="reveal">
+    <h2>Reuse it</h2>
+    <p>Copy the block that starts <code>&lt;!-- 5OS billboard</code> into any hero section that is <code>position: relative</code>, keep the two <code>.billboard</code> rules from the stylesheet, and put your own headline after it. Change the words in this file and it is your page.</p>
+  </section>
+</main>
+
+<footer>Dragon's hoard · a 5OS billboard, “Dragon's hoard”</footer>
+
+<script>
+/* reveal on scroll: elements start visible, and only animate for people who have not asked for reduced motion */
+(function () {
+  'use strict';
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>
